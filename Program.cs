@@ -51,7 +51,7 @@ namespace JsonParser
 
         protected abstract string ToStringImpl();
 
-        public string ToString() { return this.ToStringImpl(); }
+        public override string ToString() { return this.ToStringImpl(); }
     }
 
     public class StringValue : Value
@@ -135,7 +135,21 @@ namespace JsonParser
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Value v = new StringMapValue(new Dictionary<string, Value>()
+            {
+                {"x", new NumberValue(1)},
+                {"y", new StringValue("foo")},
+                {"primes", new ArrayValue(new List<Value>()
+                {
+                    new NumberValue(2),
+                    new NumberValue(3),
+                    new NumberValue(5),
+                    new NumberValue(7),
+                    new NumberValue(11),
+                })},
+            });
+
+            Console.WriteLine(v.ToString());
         }
     }
 }
