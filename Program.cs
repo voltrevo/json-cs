@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JsonParser
 {
@@ -20,6 +21,32 @@ namespace JsonParser
 
         public static explicit operator string(Value value) { return ((StringValue)value).data; }
         public static explicit operator double(Value value) { return ((NumberValue)value).data; }
+
+        public static explicit operator Dictionary<string, string>(Value value)
+        {
+            return ((Dictionary<string, Value>)value).ToDictionary(
+                item => item.Key,
+                item => (string)item.Value
+            );
+        }
+
+        public static explicit operator Dictionary<string, double>(Value value)
+        {
+            return ((Dictionary<string, Value>)value).ToDictionary(
+                item => item.Key,
+                item => (double)item.Value
+            );
+        }
+
+        public static explicit operator List<string>(Value value)
+        {
+            return ((List<Value>)value).ConvertAll(v => (string)v);
+        }
+
+        public static explicit operator List<double>(Value value)
+        {
+            return ((List<Value>)value).ConvertAll(v => (double)v);
+        }
     }
 
     public class StringValue : Value
