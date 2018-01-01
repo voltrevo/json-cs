@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace json_parser_cs
+namespace JsonParser
 {
     class Program
     {
