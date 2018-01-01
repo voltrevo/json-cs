@@ -10,6 +10,8 @@ namespace JsonParser
     {
         public abstract Type GetJsonType();
 
+        #region Cast to data
+
         public static explicit operator Dictionary<string, Value>(Value value)
         {
             return ((StringMapValue)value).data;
@@ -48,6 +50,22 @@ namespace JsonParser
         {
             return ((List<Value>)value).ConvertAll(v => (double)v);
         }
+
+        #endregion
+
+        #region Cast from data
+
+        public static implicit operator Value(string data)
+        {
+            return new StringValue(data);
+        }
+
+        public static implicit operator Value(double data)
+        {
+            return new NumberValue(data);
+        }
+
+        #endregion
 
         protected abstract string ToStringImpl();
 
@@ -137,15 +155,15 @@ namespace JsonParser
         {
             Value v = new StringMapValue(new Dictionary<string, Value>()
             {
-                {"x", new NumberValue(1)},
-                {"y", new StringValue("foo")},
+                {"x", 1},
+                {"y", "foo"},
                 {"primes", new ArrayValue(new List<Value>()
                 {
-                    new NumberValue(2),
-                    new NumberValue(3),
-                    new NumberValue(5),
-                    new NumberValue(7),
-                    new NumberValue(11),
+                    2,
+                    3,
+                    5,
+                    7,
+                    11,
                 })},
             });
 
