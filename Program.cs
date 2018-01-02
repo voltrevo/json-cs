@@ -68,9 +68,7 @@ namespace Json
 
         #endregion
 
-        protected abstract string ToStringImpl();
-
-        public override string ToString() { return this.ToStringImpl(); }
+        public abstract string ToString(string indent = "", string accumulatedIndent = "");
     }
 
     public class JsonString : JsonValue
@@ -79,13 +77,13 @@ namespace Json
         public string data { get; set; }
         public JsonString(string data) { this.data = data; }
 
-        protected override string ToStringImpl()
+        public override string ToString(string indent = "", string accumulatedIndent = "")
         {
             // TODO: escaping
             return $"\"{data}\"";
         }
 
-        public static string ToStringExternal(string s)
+        public static string StaticToString(string s)
         {
             return (new JsonString(s)).ToString();
         }
@@ -97,7 +95,7 @@ namespace Json
         public double data { get; set; }
         public JsonNumber(double data) { this.data = data; }
 
-        protected override string ToStringImpl()
+        public override string ToString(string indent = "", string accumulatedIndent = "")
         {
             return this.data.ToString();
         }
@@ -122,18 +120,41 @@ namespace Json
 
         public void Add(JsonValue value) { this.data.Add(value); }
 
-        protected override string ToStringImpl()
+        public override string ToString(string indent = "", string accumulatedIndent = "")
         {
-            string result = "[";
-            bool first = true;
-
-            foreach (JsonValue v in this) {
-                if (!first) { result += ','; }
-                result += v.ToString();
-                first = false;
+            if (this.data.Count == 0)
+            {
+                return "[]";
             }
 
-            result += "]";
+            string result = "[";
+
+            if (indent == "")
+            {
+                string prevEntry = "";
+
+                foreach (JsonValue v in this)
+                {
+                    if (prevEntry != "") { result += prevEntry + ','; }
+                    prevEntry = v.ToString();
+                }
+
+                result += prevEntry + ']';
+            }
+            else
+            {
+                result += "\n";
+                string nextIndent = accumulatedIndent + indent;
+                string prevEntry = "";
+
+                foreach (JsonValue v in this)
+                {
+                    if (prevEntry != "") { result += prevEntry + ",\n"; }
+                    prevEntry = nextIndent + v.ToString(indent, nextIndent);
+                }
+
+                result += prevEntry + '\n' + accumulatedIndent + ']';
+            }
 
             return result;
         }
@@ -161,19 +182,47 @@ namespace Json
             this.data.Add(key, value);
         }
 
-        protected override string ToStringImpl()
+        public override string ToString(string indent = "", string accumulatedIndent = "")
         {
-            string result = "{";
-            bool first = true;
-
-            foreach (var (key, value) in this)
+            if (this.data.Count == 0)
             {
-                if (!first) { result += ','; }
-                result += JsonString.ToStringExternal(key) + ':' + value.ToString();
-                first = false;
+                return "{}";
             }
 
-            result += '}';
+            string result = "{";
+
+            if (indent == "")
+            {
+                string prevEntry = "";
+
+                foreach (var (key, value) in this)
+                {
+                    if (prevEntry != "") { result += prevEntry + ','; }
+                    prevEntry = JsonString.StaticToString(key) + ':' + value.ToString();
+                }
+
+                result += prevEntry + '}';
+            }
+            else
+            {
+                result += '\n';
+                string nextIndent = accumulatedIndent + indent;
+                string prevEntry = "";
+
+                foreach (var (key, value) in this)
+                {
+                    if (prevEntry != "") { result += prevEntry + ",\n"; }
+
+                    prevEntry = (
+                        nextIndent +
+                        JsonString.StaticToString(key) +
+                        ": " +
+                        value.ToString(indent, nextIndent)
+                    );
+                }
+
+                result += prevEntry + '\n' + accumulatedIndent + '}';
+            }
 
             return result;
         }
@@ -190,7 +239,7 @@ namespace Json
                 {"primes", new JsonArray() {2, 3, 5, 7, 11}},
             };
 
-            Console.WriteLine(v.ToString());
+            Console.WriteLine(v.ToString("    "));
         }
     }
 }
