@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Json
 {
     public class JsonString : JsonValue
@@ -6,15 +8,32 @@ namespace Json
         public string data { get; set; }
         public JsonString(string data) { this.data = data; }
 
-        public override string ToString(string indent = "", string accumulatedIndent = "")
+        private static Dictionary<char, string> escapeCodes = new Dictionary<char, string>()
         {
-            // TODO: escaping
-            return $"\"{data}\"";
+            {'\b', "\\b"},
+            {'\f', "\\f"},
+            {'\n', "\\n"},
+            {'\r', "\\r"},
+            {'\t', "\\t"},
+            {'\"', "\\\""},
+            {'\\', "\\\\"},
+        };
+
+        public static string Escape(string s)
+        {
+            string result = "";
+
+            foreach (char c in s)
+            {
+                result += CollectionExtensions.GetValueOrDefault(escapeCodes, c, $"{c}");
+            }
+
+            return result;
         }
 
-        public static string StaticToString(string s)
+        public override string ToString(string indent = "", string accumulatedIndent = "")
         {
-            return (new JsonString(s)).ToString();
+            return $"\"{Escape(this.data)}\"";
         }
     }
 }

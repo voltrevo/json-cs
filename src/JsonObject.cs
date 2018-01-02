@@ -41,7 +41,7 @@ namespace Json
                 foreach (var (key, value) in this)
                 {
                     if (prevEntry != "") { result += prevEntry + ','; }
-                    prevEntry = JsonString.StaticToString(key) + ':' + value.ToString();
+                    prevEntry = $"\"{JsonString.Escape(key)}\":{value.ToString()}";
                 }
 
                 result += prevEntry + '}';
@@ -58,8 +58,9 @@ namespace Json
 
                     prevEntry = (
                         nextIndent +
-                        JsonString.StaticToString(key) +
-                        ": " +
+                        '\"' +
+                        JsonString.Escape(key) +
+                        "\": " +
                         value.ToString(indent, nextIndent)
                     );
                 }
