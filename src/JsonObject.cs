@@ -70,5 +70,71 @@ namespace Json
 
             return result;
         }
+
+        public static new (JsonObject, int) FromString(string jsonString, int pos)
+        {
+            if (jsonString[pos] != '{')
+            {
+                throw new System.FormatException("Json array must start with '{'");
+            }
+
+            pos++;
+
+            JsonObject result = new JsonObject();
+            pos = SkipWhitespace(jsonString, pos);
+            bool haveComma = false;
+
+            while (true)
+            {
+                pos = SkipWhitespace(jsonString, pos);
+
+                if (!haveComma && jsonString[pos] == '}')
+                {
+                    pos++;
+                    break;
+                }
+
+                JsonString currKey;
+                (currKey, pos) = JsonString.FromString(jsonString, pos);
+                pos = SkipWhitespace(jsonString, pos);
+
+                if (jsonString[pos] != ':')
+                {
+                    throw new System.FormatException($"Expected ':' at position {pos}");
+                }
+
+                pos++;
+                pos = SkipWhitespace(jsonString, pos);
+
+                JsonValue currValue;
+                (currValue, pos) = JsonValue.FromString(jsonString, pos);
+
+                result.Add((string)currKey, currValue);
+
+                pos = SkipWhitespace(jsonString, pos);
+                char c = jsonString[pos];
+                pos++;
+
+                if (c == '}')
+                {
+                    break;
+                }
+
+                if (c == ',')
+                {
+                    haveComma = true;
+                    continue;
+                }
+
+                throw new System.FormatException($"Unexpected character {c} at position {pos}");
+            }
+
+            return (result, pos);
+        }
+
+        public static new JsonObject FromString(string jsonString)
+        {
+            return CheckedParse(jsonString, FromString);
+        }
     }
 }
