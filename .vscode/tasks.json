@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/json-parser-cs.csproj"
+                "${workspaceFolder}/json-cs.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
