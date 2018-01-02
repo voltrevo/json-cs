@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -102,18 +103,31 @@ namespace Json
         }
     }
 
-    public class JsonArray : JsonValue
+    public class JsonArray : JsonValue, IEnumerable<JsonValue>
     {
         public override Type GetJsonType() { return Type.Array; }
         public List<JsonValue> data { get; set; }
+        public JsonArray() { this.data = new List<JsonValue>(); }
         public JsonArray(List<JsonValue> data) { this.data = data; }
+
+        IEnumerator<JsonValue> IEnumerable<JsonValue>.GetEnumerator()
+        {
+            return this.data.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.data.GetEnumerator();
+        }
+
+        public void Add(JsonValue value) { this.data.Add(value); }
 
         protected override string ToStringImpl()
         {
             string result = "[";
             bool first = true;
 
-            foreach (JsonValue v in this.data) {
+            foreach (JsonValue v in this) {
                 if (!first) { result += ','; }
                 result += v.ToString();
                 first = false;
@@ -125,18 +139,34 @@ namespace Json
         }
     }
 
-    public class JsonObject : JsonValue
+    public class JsonObject : JsonValue, IEnumerable<KeyValuePair<string, JsonValue>>
     {
         public override Type GetJsonType() { return Type.StringMap; }
         public Dictionary<string, JsonValue> data { get; set; }
+        public JsonObject() { this.data = new Dictionary<string, JsonValue>(); }
         public JsonObject(Dictionary<string, JsonValue> data) { this.data = data; }
+
+        IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator()
+        {
+            return this.data.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.data.GetEnumerator();
+        }
+
+        public void Add(string key, JsonValue value)
+        {
+            this.data.Add(key, value);
+        }
 
         protected override string ToStringImpl()
         {
             string result = "{";
             bool first = true;
 
-            foreach (var (key, value) in this.data)
+            foreach (var (key, value) in this)
             {
                 if (!first) { result += ','; }
                 result += JsonString.ToStringExternal(key) + ':' + value.ToString();
@@ -153,19 +183,12 @@ namespace Json
     {
         static void Main(string[] args)
         {
-            JsonValue v = new JsonObject(new Dictionary<string, JsonValue>()
+            JsonValue v = new JsonObject()
             {
                 {"x", 1},
                 {"y", "foo"},
-                {"primes", new JsonArray(new List<JsonValue>()
-                {
-                    2,
-                    3,
-                    5,
-                    7,
-                    11,
-                })},
-            });
+                {"primes", new JsonArray() {2, 3, 5, 7, 11}},
+            };
 
             Console.WriteLine(v.ToString());
         }
