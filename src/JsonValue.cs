@@ -79,5 +79,51 @@ namespace Json
         #endregion
 
         public abstract string ToString(string indent = "", string accumulatedIndent = "");
+
+        private static HashSet<char> whitespaceChars = new HashSet<char>()
+        {
+            ' ',
+            '\t',
+            '\n',
+            '\r',
+        };
+
+        protected static int SkipWhitespace(string jsonString, int pos)
+        {
+            while (whitespaceChars.Contains(jsonString[pos])) { pos++; }
+            return pos;
+        }
+
+        public static (JsonValue, int) FromString(string jsonString, int pos)
+        {
+            char c = jsonString[pos];
+
+            if (c == '{') { return JsonObject.FromString(jsonString, pos); }
+            if (c == '[') { return JsonArray.FromString(jsonString, pos); }
+            if (c == '"') { return JsonString.FromString(jsonString, pos); }
+            if ((c == '-') || ('0' <= c && c <= '9')) { return JsonNumber.FromString(jsonString, pos); }
+
+            throw new System.FormatException($"Unexpected character {c} at position {pos}");
+        }
+
+        protected static T CheckedParse<T>(string jsonString, System.Func<string, int, (T, int)> parse)
+        {
+            int pos = SkipWhitespace(jsonString, 0);
+            T value;
+            (value, pos) = parse(jsonString, 0);
+            pos = SkipWhitespace(jsonString, pos);
+
+            if (pos != jsonString.Length)
+            {
+                throw new System.FormatException($"Unexpected character {jsonString[pos]} at position {pos}");
+            }
+
+            return value;
+        }
+
+        public static JsonValue FromString(string jsonString)
+        {
+            return CheckedParse(jsonString, FromString);
+        }
     }
 }

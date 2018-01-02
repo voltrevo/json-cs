@@ -44,14 +44,21 @@ namespace Json
             }
         }
 
-        public static new JsonNumber FromString(string jsonString, int pos)
+        public static new (JsonNumber, int) FromString(string jsonString, int pos)
         {
             int endPos = SkipAllowedChars(jsonString, pos);
 
-            return new JsonNumber(double.Parse(
+            var value = new JsonNumber(double.Parse(
                 jsonString.Substring(pos, endPos - pos),
                 NumberStyles.Float
             ));
+
+            return (value, endPos);
+        }
+
+        public static new JsonNumber FromString(string jsonString)
+        {
+            return CheckedParse(jsonString, FromString);
         }
     }
 }

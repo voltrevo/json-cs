@@ -45,7 +45,7 @@ namespace Json
             return $"\"{Escape(this.data)}\"";
         }
 
-        public static new JsonString FromString(string jsonString, int pos)
+        public static new (JsonString, int) FromString(string jsonString, int pos)
         {
             if (jsonString[pos] != '"') {
                 throw new System.FormatException("Json string must start with '\"'");
@@ -89,7 +89,12 @@ namespace Json
                 }
             }
 
-            return new JsonString(result);
+            return (new JsonString(result), pos);
+        }
+
+        public static new JsonString FromString(string jsonString)
+        {
+            return CheckedParse(jsonString, FromString);
         }
     }
 }
