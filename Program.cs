@@ -11,6 +11,18 @@ namespace Json
     {
         public abstract Type GetJsonType();
 
+        public JsonValue this[string key]
+        {
+            get { return ((JsonObject)this).data[key]; }
+            set { ((JsonObject)this).data[key] = value; }
+        }
+
+        public JsonValue this[int index]
+        {
+            get { return ((JsonArray)this).data[index]; }
+            set { ((JsonArray)this).data[index] = value; }
+        }
+
         #region Cast to data
 
         public static explicit operator Dictionary<string, JsonValue>(JsonValue value)
