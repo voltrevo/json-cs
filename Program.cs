@@ -2,67 +2,67 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JsonParser
+namespace Json
 {
     public enum Type {StringMap, Array, String, Number};
 
-    public abstract class Value
+    public abstract class JsonValue
     {
         public abstract Type GetJsonType();
 
         #region Cast to data
 
-        public static explicit operator Dictionary<string, Value>(Value value)
+        public static explicit operator Dictionary<string, JsonValue>(JsonValue value)
         {
-            return ((StringMapValue)value).data;
+            return ((JsonObject)value).data;
         }
 
-        public static explicit operator List<Value>(Value value)
+        public static explicit operator List<JsonValue>(JsonValue value)
         {
-            return ((ArrayValue)value).data;
+            return ((JsonArray)value).data;
         }
 
-        public static explicit operator string(Value value) { return ((StringValue)value).data; }
-        public static explicit operator double(Value value) { return ((NumberValue)value).data; }
+        public static explicit operator string(JsonValue value) { return ((JsonString)value).data; }
+        public static explicit operator double(JsonValue value) { return ((JsonNumber)value).data; }
 
-        public static explicit operator Dictionary<string, string>(Value value)
+        public static explicit operator Dictionary<string, string>(JsonValue value)
         {
-            return ((Dictionary<string, Value>)value).ToDictionary(
+            return ((Dictionary<string, JsonValue>)value).ToDictionary(
                 item => item.Key,
                 item => (string)item.Value
             );
         }
 
-        public static explicit operator Dictionary<string, double>(Value value)
+        public static explicit operator Dictionary<string, double>(JsonValue value)
         {
-            return ((Dictionary<string, Value>)value).ToDictionary(
+            return ((Dictionary<string, JsonValue>)value).ToDictionary(
                 item => item.Key,
                 item => (double)item.Value
             );
         }
 
-        public static explicit operator List<string>(Value value)
+        public static explicit operator List<string>(JsonValue value)
         {
-            return ((List<Value>)value).ConvertAll(v => (string)v);
+            return ((List<JsonValue>)value).ConvertAll(v => (string)v);
         }
 
-        public static explicit operator List<double>(Value value)
+        public static explicit operator List<double>(JsonValue value)
         {
-            return ((List<Value>)value).ConvertAll(v => (double)v);
+            return ((List<JsonValue>)value).ConvertAll(v => (double)v);
         }
 
         #endregion
 
         #region Cast from data
 
-        public static implicit operator Value(string data)
+        public static implicit operator JsonValue(string data)
         {
-            return new StringValue(data);
+            return new JsonString(data);
         }
 
-        public static implicit operator Value(double data)
+        public static implicit operator JsonValue(double data)
         {
-            return new NumberValue(data);
+            return new JsonNumber(data);
         }
 
         #endregion
@@ -72,11 +72,11 @@ namespace JsonParser
         public override string ToString() { return this.ToStringImpl(); }
     }
 
-    public class StringValue : Value
+    public class JsonString : JsonValue
     {
         public override Type GetJsonType() { return Type.String; }
         public string data { get; set; }
-        public StringValue(string data) { this.data = data; }
+        public JsonString(string data) { this.data = data; }
 
         protected override string ToStringImpl()
         {
@@ -86,15 +86,15 @@ namespace JsonParser
 
         public static string ToStringExternal(string s)
         {
-            return (new StringValue(s)).ToString();
+            return (new JsonString(s)).ToString();
         }
     }
 
-    public class NumberValue : Value
+    public class JsonNumber : JsonValue
     {
         public override Type GetJsonType() { return Type.Number; }
         public double data { get; set; }
-        public NumberValue(double data) { this.data = data; }
+        public JsonNumber(double data) { this.data = data; }
 
         protected override string ToStringImpl()
         {
@@ -102,18 +102,18 @@ namespace JsonParser
         }
     }
 
-    public class ArrayValue : Value
+    public class JsonArray : JsonValue
     {
         public override Type GetJsonType() { return Type.Array; }
-        public List<Value> data { get; set; }
-        public ArrayValue(List<Value> data) { this.data = data; }
+        public List<JsonValue> data { get; set; }
+        public JsonArray(List<JsonValue> data) { this.data = data; }
 
         protected override string ToStringImpl()
         {
             string result = "[";
             bool first = true;
 
-            foreach (Value v in this.data) {
+            foreach (JsonValue v in this.data) {
                 if (!first) { result += ','; }
                 result += v.ToString();
                 first = false;
@@ -125,11 +125,11 @@ namespace JsonParser
         }
     }
 
-    public class StringMapValue : Value
+    public class JsonObject : JsonValue
     {
         public override Type GetJsonType() { return Type.StringMap; }
-        public Dictionary<string, Value> data { get; set; }
-        public StringMapValue(Dictionary<string, Value> data) { this.data = data; }
+        public Dictionary<string, JsonValue> data { get; set; }
+        public JsonObject(Dictionary<string, JsonValue> data) { this.data = data; }
 
         protected override string ToStringImpl()
         {
@@ -139,7 +139,7 @@ namespace JsonParser
             foreach (var (key, value) in this.data)
             {
                 if (!first) { result += ','; }
-                result += StringValue.ToStringExternal(key) + ':' + value.ToString();
+                result += JsonString.ToStringExternal(key) + ':' + value.ToString();
                 first = false;
             }
 
@@ -153,11 +153,11 @@ namespace JsonParser
     {
         static void Main(string[] args)
         {
-            Value v = new StringMapValue(new Dictionary<string, Value>()
+            JsonValue v = new JsonObject(new Dictionary<string, JsonValue>()
             {
                 {"x", 1},
                 {"y", "foo"},
-                {"primes", new ArrayValue(new List<Value>()
+                {"primes", new JsonArray(new List<JsonValue>()
                 {
                     2,
                     3,
