@@ -60,5 +60,59 @@ namespace Json
 
             return result;
         }
+
+        public static new (JsonArray, int) FromString(string jsonString, int pos)
+        {
+            if (jsonString[pos] != '[')
+            {
+                throw new System.FormatException("Json array must start with '['");
+            }
+
+            pos++;
+
+            JsonArray result = new JsonArray();
+            pos = SkipWhitespace(jsonString, pos);
+            bool haveComma = false;
+
+            while (true)
+            {
+                pos = SkipWhitespace(jsonString, pos);
+
+                if (!haveComma && jsonString[pos] == ']')
+                {
+                    pos++;
+                    break;
+                }
+
+                JsonValue curr;
+                (curr, pos) = JsonValue.FromString(jsonString, pos);
+
+                result.Add(curr);
+                pos = SkipWhitespace(jsonString, pos);
+
+                char c = jsonString[pos];
+                pos++;
+
+                if (c == ']')
+                {
+                    break;
+                }
+
+                if (c == ',')
+                {
+                    haveComma = true;
+                    continue;
+                }
+
+                throw new System.FormatException($"Unexpected character {c} at position {pos}");
+            }
+
+            return (result, pos);
+        }
+
+        public static new JsonArray FromString(string jsonString)
+        {
+            return CheckedParse(jsonString, FromString);
+        }
     }
 }
