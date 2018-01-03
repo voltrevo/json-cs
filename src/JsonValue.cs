@@ -90,7 +90,11 @@ namespace Json
 
         protected static int SkipWhitespace(string jsonString, int pos)
         {
-            while (whitespaceChars.Contains(jsonString[pos])) { pos++; }
+            while (pos < jsonString.Length && whitespaceChars.Contains(jsonString[pos]))
+            {
+                pos++;
+            }
+            
             return pos;
         }
 
