@@ -75,7 +75,7 @@ namespace Json
         {
             if (jsonString[pos] != '{')
             {
-                throw new System.FormatException("Json array must start with '{'");
+                throw new System.FormatException("Json object must start with '{'");
             }
 
             pos++;
